@@ -72,6 +72,24 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 @keyframes bump{30%{transform:translateX(18%) rotate(10deg)}60%{transform:translateX(-8%) rotate(-8deg)}}
 @keyframes sink{to{transform:translateY(30%) scale(.4);opacity:.2}}
 @keyframes party{50%{transform:translateY(-25%) rotate(-12deg) scale(1.15)}}
+/* planned path: shows where the code will take the monster, step by step */
+.trail{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:visible}
+.trail svg.line{position:absolute;left:0;top:0;overflow:visible}
+.trail .ln{fill:none;stroke:var(--block);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:2 11;opacity:.75}
+.tk{position:absolute;left:0;top:0;width:var(--c);height:var(--c);display:grid;place-items:center;transition:opacity .35s,transform .35s}
+.tk i{position:relative;width:46%;height:46%;border-radius:30%;background:var(--block);display:grid;place-items:center;box-shadow:0 3px 0 rgba(0,0,0,.18)}
+.tk i svg{width:80%;height:80%;fill:#fff}
+.tk b{position:absolute;right:-9px;top:-9px;min-width:1.5em;height:1.5em;border-radius:999px;background:#fff;color:#1e3b33;font:400 11px/1.5em system-ui,sans-serif;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.tk.J i{background:var(--jump)}
+.tk.x i{background:#e03131}
+.tk.new{animation:tkpop .4s ease-out}
+.tk.done{opacity:0;transform:scale(.4)}
+@keyframes tkpop{0%{transform:scale(0)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+.hero.walk{transition:transform .42s linear}
+.hero.walk:not(.hop) .face{animation:waddle .42s ease-in-out infinite}
+.hero.walk.left:not(.hop) .face{animation-name:waddlel}
+@keyframes waddle{25%{transform:rotate(-7deg) translateY(-6%)}75%{transform:rotate(7deg) translateY(-6%)}}
+@keyframes waddlel{0%,50%,100%{transform:scaleX(-1)}25%{transform:scaleX(-1) rotate(-7deg) translateY(-6%)}75%{transform:scaleX(-1) rotate(7deg) translateY(-6%)}}
 
 /* side panel */
 .side{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:14px;display:flex;flex-direction:column;gap:12px;min-height:0;overflow:auto}
@@ -271,12 +289,13 @@ function drawBoard(){
     else if(ch==='W'){c.className='cell w';c.innerHTML='<span class="deco">💧</span>'}
     else{c.className='cell p';if(ch==='*')c.innerHTML='<span class="star">⭐</span>';if(ch==='G')c.innerHTML=`<span class="gl">${GOALS[lv.g].e}</span>`}
     b.appendChild(c);n++}
+  const tr=document.createElement('div');tr.className='trail';tr.id='trail';b.appendChild(tr);
   hero=document.createElement('div');hero.className='hero';hero.innerHTML=`<span class="face">${mon}</span>`;b.appendChild(hero);
   fit();place(start,'R',true);updGot()}
 function fit(){const r=$('boardwrap').getBoundingClientRect();if(!r.width)return;
   const narrow=innerWidth<=860,availH=narrow?Math.min(innerWidth*.9,420):r.height-20;
   cellSize=Math.max(30,Math.min(96,Math.floor((r.width-12-4*(W-1)-8)/W),Math.floor((availH-12-4*(H-1))/H)));
-  $('board').style.setProperty('--c',cellSize+'px');if(pos)place(pos,face,true)}
+  $('board').style.setProperty('--c',cellSize+'px');if(pos)place(pos,face,true);if(!running)preview()}
 function place(p,f,instant){pos=p;face=f;if(!hero)return;
   if(instant){hero.style.transition='none'}
   hero.style.transform=`translate(${6+p[0]*(cellSize+4)}px,${6+p[1]*(cellSize+4)}px)`;
@@ -284,6 +303,22 @@ function place(p,f,instant){pos=p;face=f;if(!hero)return;
   if(instant){void hero.offsetWidth;hero.style.transition=''}}
 function updGot(){const total=lv.m.join('').split('*').length-1;$('got').innerHTML=Array.from({length:total},(_,i)=>icon('star',i<got.size?'on':'')).join('')}
 function msg(t){$('msg').textContent=t}
+
+/* ---------- planned path preview ---------- */
+function sim(){const out=[];let p=[...start],f='R';
+  for(let i=0;i<prog.length;i++){const k=prog[i];let np,mid=null;
+    if(k==='J'){const d=DIRS[f];mid=[p[0]+d[0],p[1]+d[1]];np=[p[0]+2*d[0],p[1]+2*d[1]]}else{const d=DIRS[k];f=k;np=[p[0]+d[0],p[1]+d[1]]}
+    const dest=at(np[0],np[1]);
+    if(k==='J'&&at(mid[0],mid[1])==='#'||dest==='#'){let t=k==='J'&&at(mid[0],mid[1])==='#'?mid:np;if(t[0]<0||t[1]<0||t[0]>=W||t[1]>=H)t=p;out.push({k,to:t,bad:1,from:p});break}
+    out.push({k,to:np,from:p,bad:dest==='W'?1:0});p=np;if(dest==='W'||dest==='G')break}
+  return out}
+let shown=0;
+function preview(){const tr=$('trail');if(!tr||!lv)return;const st=sim(),c=cellSize,ctr=q=>[6+q[0]*(c+4)+c/2,6+q[1]*(c+4)+c/2];
+  const pts=[ctr(start)].concat(st.map(s=>ctr(s.to)));
+  let h=`<svg class="line" width="1" height="1"><polyline class="ln" points="${pts.map(q=>q.join(',')).join(' ')}"/></svg>`;
+  st.forEach((s,i)=>{const tx=6+s.to[0]*(c+4),ty=6+s.to[1]*(c+4);
+    h+=`<div class="tk ${s.k}${s.bad?' x':''}${i>=shown?' new':''}" id="tk-${i}" style="translate:${tx}px ${ty}px"><i>${icon(BLOCKS[s.k].ic)}<b>${i+1}</b></i></div>`});
+  tr.innerHTML=h;shown=st.length}
 
 /* ---------- blocks and code ---------- */
 function drawPalette(){const p=$('palette');p.innerHTML='';
@@ -294,9 +329,10 @@ const maxSlots=()=>Math.min(24,Math.max(8,lv.opt+4));
 function drawSlots(run=-1,bad=-1){const s=$('slots');s.innerHTML='';
   for(let i=0;i<maxSlots();i++){const k=prog[i],b=document.createElement('button');b.type='button';b.id='slot-'+i;
     b.className='slot'+(k?' f '+k:'')+(i===run?' run':'')+(i===bad?' bad':'');
-    if(k){b.innerHTML=icon(BLOCKS[k].ic);b.setAttribute('aria-label','Remove '+BLOCKS[k].en);b.onclick=()=>{if(running)return;prog.splice(i,1);SFX.unpop();drawSlots()}}
+    if(k){b.innerHTML=icon(BLOCKS[k].ic);b.setAttribute('aria-label','Remove '+BLOCKS[k].en);b.onclick=()=>{if(running)return;prog.splice(i,1);shown=Math.min(shown,i);SFX.unpop();drawSlots();resetHero()}}
     else{b.setAttribute('aria-label','Empty box');b.disabled=true}
     s.appendChild(b)}
+  if(!running)preview();
   $('codeLbl').textContent=`Your code · तुम्हारा कोड (${prog.length}/${maxSlots()})`}
 function addBlock(k){if(running)return;if(prog.length>=maxSlots()){msg('The code boxes are full · डिब्बे भर गए');SFX.bonk();return}
   prog.push(k);SFX.pop();say(BLOCKS[k].say,BLOCKS[k].hi);drawSlots();resetHero()}
@@ -307,7 +343,7 @@ async function run(){
   if(running){stopReq=true;return}
   if(!prog.length){msg('Add some blocks first · पहले ब्लॉक जोड़ो');SFX.bonk();return}
   got=new Set();drawBoard();await sleep(250);
-  running=true;stopReq=false;$('playBtn').innerHTML=icon('stop')+'Stop';
+  running=true;stopReq=false;hero.classList.add('walk');$('playBtn').innerHTML=icon('stop')+'Stop';
   let p=[...start],f='R',result='short';
   for(let i=0;i<prog.length;i++){
     if(stopReq){result='stopped';break}
@@ -319,13 +355,13 @@ async function run(){
     if(k==='J'&&midc==='#'||dest==='#'){ // bump into a tree or the edge
       hero.classList.toggle('left',f==='L');hero.classList.remove('bump');void hero.offsetWidth;hero.classList.add('bump');SFX.bonk();drawSlots(-1,i);result='bump';await sleep(500);break}
     if(k==='J'){hero.classList.remove('hop');void hero.offsetWidth;hero.classList.add('hop');SFX.jump()}else SFX.step();
-    place(np,f);p=np;await sleep(k==='J'?480:400);hero.classList.remove('hop');
+    place(np,f);p=np;await sleep(k==='J'?480:420);hero.classList.remove('hop');const tk=$('tk-'+i);if(tk&&dest!=='W')tk.classList.add('done');
     if(dest==='W'){hero.classList.add('sink');SFX.splash();drawSlots(-1,i);result='splash';await sleep(700);break}
     const key=p[0]+','+p[1];
     if(dest==='*'&&!got.has(key)){got.add(key);SFX.star();const s=cellAt(p).querySelector('.star');if(s)s.classList.add('gone');updGot()}
     if(dest==='G'){result='win';break}
   }
-  running=false;$('playBtn').innerHTML=icon('play_arrow')+'Play';drawSlots();
+  running=false;hero.classList.remove('walk');$('playBtn').innerHTML=icon('play_arrow')+'Play';drawSlots();
   if(result==='win')return win();
   if(result==='bump'){msg('Bonk! A tree is in the way. Mistakes help us learn, try again · फिर से कोशिश करो');say('Oops! Try again','अरे! फिर से कोशिश करो')}
   else if(result==='splash'){msg('Splash! Use the purple Jump block to hop over water · पानी पर कूदो');say('Splash! Try jumping','छपाक! कूद कर देखो')}
@@ -365,8 +401,8 @@ $('levelsBtn').onclick=()=>{if(!running)openLevels()};
 $('monBtn').onclick=()=>{if(!running)openMonsters()};
 $('voiceBtn').onclick=()=>{voice=voice==='hi'?'en':'hi';store();paintTop();say('Hello!','नमस्ते!')};
 $('playBtn').innerHTML=icon('play_arrow')+'Play';$('playBtn').onclick=run;
-$('undoBtn').innerHTML=icon('backspace');$('undoBtn').onclick=()=>{if(running||!prog.length)return;prog.pop();SFX.unpop();drawSlots();resetHero()};
-$('clearBtn').innerHTML=icon('delete');$('clearBtn').onclick=()=>{if(running)return;prog=[];SFX.unpop();drawSlots();resetHero();msg('Cleared · साफ़')};
+$('undoBtn').innerHTML=icon('backspace');$('undoBtn').onclick=()=>{if(running||!prog.length)return;prog.pop();shown=prog.length;SFX.unpop();drawSlots();resetHero()};
+$('clearBtn').innerHTML=icon('delete');$('clearBtn').onclick=()=>{if(running)return;prog=[];shown=0;SFX.unpop();drawSlots();resetHero();msg('Cleared · साफ़')};
 
 const SHARE_URL='https://visualschedulesofficial-gif.github.io/growgently-play-/code/';
 /* ---------- full screen + share (helps when the app sits inside a website page) ---------- */
