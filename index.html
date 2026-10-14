@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Grow Gently Play</title>
+<meta name="description" content="Free learning tools for kids from Grow Gently: a drawing app and a typing tutor, in English and Hindi.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Playwrite+DE+Grund:wght@100..400&display=swap">
+<style>
+:root{--bg:#e6efea;--panel:#fff;--ink:#1e3b33;--muted:#566b62;--line:#cde0d6;--accent:#2e7d62;--save:#ffc61a;--font:"Playwrite DE Grund","Kalam","Noto Sans Devanagari",cursive}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1a16;--panel:#17241f;--ink:#ecf4ef;--muted:#9db3a9;--line:#2b3e35;--accent:#5cc29c}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-synthesis:none;line-height:1.5}
+main{max-width:900px;margin:0 auto;padding:40px 16px;display:grid;gap:24px}
+h1{margin:0;font-weight:400;font-size:clamp(28px,5vw,40px)}
+p{margin:0;color:var(--muted);font-size:17px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+a.card{display:grid;gap:8px;background:var(--panel);border:2px solid var(--line);border-radius:22px;padding:22px;color:inherit;text-decoration:none}
+a.card:hover,a.card:focus-visible{border-color:var(--accent);outline:none}
+.card b{font-weight:400;font-size:24px}
+.card span.go{justify-self:start;margin-top:6px;background:var(--save);color:#1e3b33;border-radius:12px;padding:8px 16px;font-size:16px}
+.card .ic{width:52px;height:52px;border-radius:14px;background:var(--accent);display:grid;place-items:center;font-size:28px;color:#fff}
+footer{color:var(--muted);font-size:14px}
+footer a{color:inherit}
+</style>
+</head>
+<body>
+<main>
+  <div><h1>Grow Gently Play</h1><p>Free tools for little learners, in English and Hindi · बच्चों के लिए मुफ़्त</p></div>
+  <div class="cards">
+    <a class="card" href="paint/"><span class="ic">✎</span><b>Paint · चित्र बनाओ</b><p>Draw, colour 95 pictures, make characters and silly monsters with shapes, eyes and horns.</p><span class="go">Start drawing</span></a>
+    <a class="card" href="typing/"><span class="ic">⌨</span><b>Typing · टाइपिंग सीखो</b><p>Learn to type one key at a time, from a s d f to short sentences, with helper hands.</p><span class="go">Start typing</span></a>
+  </div>
+  <footer>Made by <a href="https://growgently.in">Grow Gently</a> · Pictures include <a href="https://openmoji.org">OpenMoji</a> art (CC BY-SA 4.0)</footer>
+</main>
+</body>
+</html>

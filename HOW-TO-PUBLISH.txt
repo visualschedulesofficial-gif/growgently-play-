@@ -1,0 +1,19 @@
+GROW GENTLY PLAY - how to put it live at play.growgently.in
+
+1. GitHub: create a new repository called "growgently-play".
+   Upload everything inside this folder (index.html, paint/, typing/) - keep the folders as they are.
+
+2. Cloudflare: Workers & Pages > Create > Pages > Connect to Git > pick "growgently-play".
+   Framework preset: None. Build command: leave empty. Build output directory: /
+   Save and Deploy. You get a link like growgently-play.pages.dev - open it to check.
+
+3. Custom domain: in the Pages project > Custom domains > Set up a domain > play.growgently.in
+   Cloudflare shows a CNAME record. Add it where growgently.in's DNS is managed (Namecheap):
+   Type CNAME, Host "play", Value "growgently-play.pages.dev". Do not touch the Payhip records.
+
+4. Payhip: Store Builder > the page you want > Add section > Embed Code, paste:
+   <iframe src="https://play.growgently.in/paint/" style="width:100%;height:90vh;border:0;border-radius:16px" allow="fullscreen" title="Grow Gently Paint"></iframe>
+   For typing use https://play.growgently.in/typing/
+   Payhip does not show embeds in the builder preview - check the live page.
+
+To update later: replace the files in the GitHub repo; Cloudflare republishes by itself.
