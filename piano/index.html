@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+<meta name="description" content="Free kids piano: play nursery rhymes one glowing key at a time, by Grow Gently.">
+<title>Grow Gently Piano</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Playwrite+DE+Grund:wght@100..400&display=swap">
+<style>
+/* Layout: one calm screen like Grow Gently Typing. Top bar; the rhyme's words in the middle with the current word lit;
+   a big colourful piano across the bottom where the next key glows and a little finger bobs above it. */
+:root{
+  --bg:#e6efea;--panel:#ffffff;--ink:#1e3b33;--muted:#566b62;--line:#cde0d6;--btn:#eef5f1;
+  --accent:#2e7d62;--accent-ink:#ffffff;--glow:#ffc61a;--good:#2e7d62;
+  --font:"Playwrite DE Grund","Kalam","Noto Sans Devanagari",cursive;
+  /* one colour per note, like classroom bells: C red, D orange, E yellow, F green, G teal, A blue, B purple */
+  --nC:#ff8a80;--nD:#ffb74d;--nE:#ffe066;--nF:#9bd89f;--nG:#7fdbe6;--nA:#8ec5fb;--nB:#cf9ade;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1a16;--panel:#17241f;--ink:#ecf4ef;--muted:#9db3a9;--line:#2b3e35;--btn:#20302a;--accent:#5cc29c;--accent-ink:#0b1a14;--glow:#ffd23f;--good:#5cc29c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1a16;--panel:#17241f;--ink:#ecf4ef;--muted:#9db3a9;--line:#2b3e35;--btn:#20302a;--accent:#5cc29c;--accent-ink:#0b1a14;--glow:#ffd23f;--good:#5cc29c;color-scheme:dark}
+
+[hidden]{display:none!important}
+body{font-synthesis:none;line-height:1.45}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);margin:0;overflow:hidden}
+svg.i{width:24px;height:24px;fill:currentColor;flex:none;display:block}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{height:100%;box-sizing:border-box;padding-block:12px;padding-inline:16px;display:grid;grid-template-rows:auto minmax(0,1fr);gap:12px;max-width:1280px;margin:0 auto}
+
+.top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.brand{font-size:22px;display:flex;align-items:center;gap:8px;margin-right:auto}
+.brand small{font-size:15px;color:var(--muted)}
+.badge{width:38px;height:38px;border-radius:11px;background:var(--accent);display:grid;place-items:center;flex:none}
+.badge svg.i{fill:#fff;width:26px;height:26px}
+.pill{appearance:none;border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:5px 14px;display:flex;align-items:center;gap:6px;font-size:15px}
+.pill.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:24px;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;gap:10px;padding:16px 20px 20px;min-height:0;position:relative;overflow:hidden}
+.head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.head h1{margin:0;font-weight:400;font-size:22px;line-height:1.4}
+.head p{margin:0;color:var(--muted);font-size:15px}
+.bar{flex:1 1 200px;max-width:340px;height:14px;border-radius:999px;background:var(--btn);border:2px solid var(--line);overflow:hidden;margin-left:auto}
+.bar i{display:block;height:100%;width:0;background:var(--glow);transition:width .2s}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+
+.lyrics{display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:10px 8px;overflow:auto;padding:6px;min-height:0}
+.line{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;width:100%}
+.syl{font-size:clamp(22px,4.4vh,40px);line-height:1.35;padding:2px 10px 4px;border-radius:12px;border:3px solid transparent;color:var(--muted);position:relative}
+.syl .dot{position:absolute;left:50%;bottom:-6px;width:10px;height:10px;border-radius:50%;transform:translateX(-50%)}
+.syl.done{color:var(--good)}
+.syl.now{color:var(--ink);background:color-mix(in srgb,var(--glow) 30%,transparent);border-color:var(--glow)}
+.hint{text-align:center;font-size:18px;color:var(--muted);min-height:1.6em}
+.hint b{color:var(--ink);font-weight:400}
+
+/* piano */
+.piano{--wk:clamp(26px,min(8.6vw,13vh,calc((100vw - 120px) / 10)),110px);position:relative;display:flex;justify-content:center;user-select:none;-webkit-user-select:none;touch-action:none;padding-top:34px}
+.keys{position:relative;display:flex;gap:4px}
+.wk{width:var(--wk);height:calc(var(--wk)*2.3);border-radius:0 0 16px 16px;background:#fff;border:2px solid #b9c9c0;position:relative;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;
+  box-shadow:inset 0 -8px 0 rgba(0,0,0,.08);overflow:hidden}
+.wk .band{position:absolute;left:0;right:0;bottom:0;height:42%;background:var(--c);opacity:.9}
+.wk .lab{position:relative;font-size:calc(var(--wk)*.36);color:#1e3b33;padding-bottom:10px;line-height:1}
+.bk{position:absolute;top:0;width:calc(var(--wk)*.62);height:calc(var(--wk)*1.4);background:#23302b;border-radius:0 0 10px 10px;z-index:2;
+  display:flex;align-items:flex-end;justify-content:center;color:#cfe0d7;font-size:calc(var(--wk)*.2);padding-bottom:6px;box-sizing:border-box;box-shadow:inset 0 -6px 0 rgba(255,255,255,.08)}
+.wk.press,.bk.press{transform:translateY(3px);filter:brightness(.92)}
+.wk.lit{outline:6px solid var(--glow);outline-offset:-2px;animation:glow 1s ease-in-out infinite;z-index:1}
+.bk.lit{outline:5px solid var(--glow);animation:glow 1s ease-in-out infinite}
+@keyframes glow{50%{outline-color:color-mix(in srgb,var(--glow) 35%,transparent)}}
+.finger{position:absolute;top:0;width:32px;height:32px;margin-left:-16px;color:var(--accent);animation:bob .8s ease-in-out infinite;pointer-events:none;z-index:3}
+.finger svg{width:32px;height:32px;fill:currentColor;transform:rotate(180deg)}
+@keyframes bob{50%{transform:translateY(8px)}}
+.kbhint{text-align:center;color:var(--muted);font-size:13px;margin-top:6px}
+
+/* screens */
+.screen{position:absolute;inset:0;z-index:5;background:var(--panel);display:grid;place-items:center;padding:20px;overflow:auto}
+.center{display:grid;gap:14px;justify-items:center;text-align:center;width:min(900px,100%)}
+.center h2{margin:0;font-weight:400;font-size:clamp(26px,4.5vh,38px);line-height:1.3}
+.center p{margin:0;font-size:18px;color:var(--muted);max-width:56ch}
+.songs{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;width:100%}
+.song{appearance:none;border:2px solid var(--line);background:var(--btn);color:var(--ink);border-radius:18px;padding:14px;text-align:left;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center}
+.song .ic{grid-row:1/3;width:52px;height:52px;border-radius:14px;display:grid;place-items:center;background:var(--accent)}
+.song .ic svg.i{fill:#fff;width:30px;height:30px}
+.song b{font-weight:400;font-size:17px;line-height:1.25}
+.song span{font-size:13px;color:var(--muted)}
+.song .stars{display:flex;gap:2px}.song .stars svg{width:15px;height:15px;fill:var(--line)}.song .stars svg.got{fill:var(--glow)}
+.song.free .ic{background:var(--glow)}.song.free .ic svg.i{fill:#1e3b33}
+.big{appearance:none;border:0;background:var(--glow);color:#1e3b33;font-size:22px;border-radius:18px;padding:12px 28px;display:inline-flex;gap:8px;align-items:center;box-shadow:inset 0 -5px 0 rgba(0,0,0,.14)}
+.big.alt{background:var(--btn);color:var(--ink);font-size:18px}
+.prize svg{width:110px;height:110px;fill:var(--accent)}
+.won{display:flex;gap:6px}.won svg{width:52px;height:52px;fill:var(--line)}.won svg.got{fill:var(--glow)}
+.toast{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:9;background:var(--ink);color:var(--panel);padding:8px 16px;border-radius:999px;font-size:15px;pointer-events:none;max-width:calc(100% - 24px);text-align:center;overflow-wrap:anywhere}
+
+@media (max-width:1100px){#fsBtn span,#shareBtn span,#labBtn span{display:none}}
+@media (max-width:700px){.brand small{display:none}.kbhint{display:none}.stage{padding:12px}}
+@media (prefers-reduced-motion:reduce){.wk.lit,.bk.lit,.finger{animation:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand" id="brand"></div>
+    <button type="button" class="pill" id="songsBtn"></button>
+    <button type="button" class="pill" id="labBtn"></button>
+    <button type="button" class="pill" id="fsBtn"></button>
+    <button type="button" class="pill" id="shareBtn"></button>
+  </header>
+  <main class="stage" id="stage">
+    <div class="head">
+      <div><h1 id="title">Free play · खुद बजाओ</h1><p id="sub">Play any key you like</p></div>
+      <div class="acts" id="acts">
+        <button type="button" class="pill" id="listenBtn"></button>
+        <button type="button" class="pill" id="restartBtn"></button>
+      </div>
+      <div class="bar" id="bar" aria-label="Progress"><i id="barFill"></i></div>
+    </div>
+    <div class="lyrics" id="lyrics" aria-live="polite"></div>
+    <div class="hint" id="hint"></div>
+    <div><div class="piano" id="piano"><div class="keys" id="keys"></div></div>
+      <div class="kbhint">On a computer you can also use the keys A S D F G H J K L ; and W E T Y U O P for the black keys</div></div>
+
+    <section class="screen" id="songScreen">
+      <div class="center">
+        <h2>Pick a rhyme · गाना चुनो</h2>
+        <p>Tap a rhyme. Press Listen to hear it first, then play it one glowing key at a time.</p>
+        <div class="songs" id="songs"></div>
+      </div>
+    </section>
+    <section class="screen" id="doneScreen" hidden>
+      <div class="center">
+        <div class="prize" id="prize"></div>
+        <h2 id="doneTitle">You played it!</h2>
+        <div class="won" id="won"></div>
+        <p id="doneText"></p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+          <button type="button" class="big alt" id="againBtn"></button>
+          <button type="button" class="big" id="nextBtn"></button>
+        </div>
+      </div>
+    </section>
+    <div class="toast" id="toast" hidden></div>
+  </main>
+</div>
+
+<script>const ICONS={"piano":"M180-120q-24 0-42-18t-18-42v-600q0-23 18-41.5t42-18.5h600q23 0 41.5 18.5T840-780v600q0 24-18.5 42T780-120H180Zm0-60h157v-210h-20q-12.75 0-21.37-8.63Q287-407.25 287-420v-360H180v600Zm443 0h157v-600H673v360q0 12.75-8.62 21.37Q655.75-390 643-390h-20v210Zm-246 0h206v-210h-20q-12.75 0-21.37-8.63Q533-407.25 533-420v-360H427v360q0 12.75-8.62 21.37Q409.75-390 397-390h-20v210Z","star":"M480-269 294-157q-8 5-17 4.5t-16-5.5q-7-5-10.5-13t-1.5-18l49-212-164-143q-8-7-9.5-15.5t.5-16.5q2-8 9-13.5t17-6.5l217-19 84-200q4-9 12-13.5t16-4.5q8 0 16 4.5t12 13.5l84 200 217 19q10 1 17 6.5t9 13.5q2 8 .5 16.5T826-544L662-401l49 212q2 10-1.5 18T699-158q-7 5-16 5.5t-17-4.5L480-269Z","pets":"M169.86-485Q132-485 106-511.14t-26-64Q80-613 106.14-639t64-26Q208-665 234-638.86t26 64Q260-537 233.86-511t-64 26Zm185-170Q317-655 291-681.14t-26-64Q265-783 291.14-809t64-26Q393-835 419-808.86t26 64Q445-707 418.86-681t-64 26Zm250 0Q567-655 541-681.14t-26-64Q515-783 541.14-809t64-26Q643-835 669-808.86t26 64Q695-707 668.86-681t-64 26Zm185 170Q752-485 726-511.14t-26-64Q700-613 726.14-639t64-26Q828-665 854-638.86t26 64Q880-537 853.86-511t-64 26ZM266-75q-42 0-69-31.53-27-31.52-27-74.47 0-42 25.5-74.5T250-318q22-22 41-46.5t36-50.5q29-44 65-82t88-38q52 0 88.5 38t65.5 83q17 26 35.5 50t40.5 46q29 30 54.5 62.5T790-181q0 42.95-27 74.47Q736-75 694-75q-54 0-107-9t-107-9q-54 0-107 9t-107 9Z","sailing":"m161-467 228-331q5-7 11.5-9t13.5 0q7 2 11.5 7.5T430-786v336q0 13-8.5 21.5T400-420H186q-9 0-16-4.5T159-436q-4-7-3.5-15t5.5-16Zm392 47q-33 0-29-27.5t9-44.5q9-42 13-86t4-92q0-46-4-90t-13-87q-2-10 1-18.5t10-13.5q7-5 16-6t17 4q41 24 84.5 75t69.5 91q41 63 64.5 125T827-453q2 14-7 23.5t-23 9.5H553ZM360-196q-29 0-53.5-15T259-245q-5-4-9.5-5.5T240-252q-5 0-9.5 1.5T221-245q-12 10-25 18.5T169-213q-20-13-39.5-34.5T98-295q-7-15-.5-30t26.5-15h712q16 0 24.5 12.5T864-300q-8 23-30.5 48.5T791-213q-15-5-27.5-13.5T739-245q-5-4-9.5-5.5T720-252q-5 0-9.5 1.5T701-245q-23 19-47.5 34T600-196q-29 0-53.5-15T499-245q-5-4-9.5-5.5T480-252q-5 0-9.5 1.5T461-245q-23 19-47.5 34T360-196ZM480-80q-30 23-60.5 31.5T360-40q-29 0-59.5-8.5T240-80q-31 24-61.5 32T110-40q-13 0-21.5-8.5T80-70q0-19 12.5-24.5T120-100q29 0 55-11t49-27q4-2 7.5-3.5t8.5-1.5q5 0 8.5 1.5t7.5 3.5q24 16 49.5 27t54.5 11q29 0 55-11t49-27q4-2 7.5-3.5t8.5-1.5q5 0 8.5 1.5t7.5 3.5q24 16 49.5 27t54.5 11q29 0 55-11t49-27q2-1 16-5 4 0 16 5 23 16 49 27t55 11q15 0 27.5 5.5T880-70q0 19-12.5 24.5T840-40q-29 0-59.5-8.5T720-80q-30 23-60.5 31.5T600-40q-29 0-59.5-8.5T480-80Z","cake":"M160-80q-17 0-28.5-11.5T120-120v-219q0-24.75 17.63-42.38Q155.25-399 180-399h600q24.75 0 42.38 17.62Q840-363.75 840-339v219q0 17-11.5 28.5T800-80H160Zm47-379v-122q0-24.75 17.63-42.38Q242.25-641 267-641h183v-64q-20-14-30.5-30.53-10.5-16.54-10.5-39.88 0-14.59 5.5-28.09T430-827l39-41q1-1 11.29-5 1.71 0 10.71 5l39 41q10 10 16 23.5t6 28.09q0 23.34-11 39.88Q530-719 510-705v64h183q24.75 0 42.38 17.62Q753-605.75 753-581v122H207Z","agriculture":"M228-160q-78.02 0-133.01-55.61Q40-271.21 40-350.11 40-429 95.61-484.5q55.6-55.5 134.5-55.5 78.89 0 134.39 55.61 55.5 55.6 55.5 134.5 0 78.89-56.16 134.39Q307.68-160 228-160Zm2.12-120q-29.12 0-49.62-20.38-20.5-20.38-20.5-49.5t20.38-49.62q20.38-20.5 49.5-20.5t49.62 20.38q20.5 20.38 20.5 49.5t-20.38 49.62q-20.38 20.5-49.5 20.5ZM785.5-160q-56.5 0-96-38.66Q650-237.31 650-292q0-57.17 40.41-97.59Q730.83-430 788-430q54.69 0 93.34 39.54Q920-350.93 920-295q0 57-39 96t-95.5 39ZM145-599q-11.48 0-19.24-9-7.76-9-7.76-21t7.76-21q7.76-9 19.24-9h149q25.16 0 43.08 17.5Q355-624 360-599H145Zm84.88 379Q284-220 322-257.88q38-37.88 38-92T322.12-442q-37.88-38-92-38T138-442.12q-38 37.88-38 92T137.88-258q37.88 38 92 38Zm554.94 0Q816-220 838-241.82q22-21.83 22-53Q860-326 838.18-348q-21.83-22-53-22Q754-370 732-348.18q-22 21.83-22 53Q710-264 731.82-242q21.83 22 53 22ZM448-320h174q15-63 63.5-100T791-457q20.27 0 40.14 5Q851-447 870-436v-223q0-24.75-17.62-42.38Q834.75-719 810-719H538l-49-49 53-53q4-3.82 4-8.91t-3.86-9.09q-3.85-4-9-4-5.14 0-9.14 4L401-716q-4 4-4 9.5t3.86 9.5q3.85 4 9 4 5.14 0 9.14-4l52-52 49 47.64V-597q0 41.66-28.5 71.33T421-496h-26q30 32 43.5 73.5T450-337q0 5-.5 8.5T448-320Z","castle":"M40-180v-380q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v50h110v-300q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v50h100v-50q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v50h100v-50q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v50h100v-50q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v300h110v-50q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v380q0 24.75-17.62 42.37Q884.75-120 860-120H600q-12.75 0-21.37-8.63Q570-137.25 570-150v-90q0-38-26-64t-64-26q-38 0-64 26t-26 64v90q0 12.75-8.62 21.37Q372.75-120 360-120H100q-24.75 0-42.37-17.63Q40-155.25 40-180Zm338-310h44.57q3.72 0 5.57-2.5Q430-495 430-498v-72q0-12.75-8.68-21.38-8.67-8.62-21.5-8.62-12.82 0-21.32 8.62-8.5 8.63-8.5 21.38v72q0 3 2.5 5.5t5.5 2.5Zm160 0h44.57q3.72 0 5.57-2.5Q590-495 590-498v-72q0-12.75-8.68-21.38-8.67-8.62-21.5-8.62-12.82 0-21.32 8.62-8.5 8.63-8.5 21.38v72q0 3 2.5 5.5t5.5 2.5Z","bakery_dining":"m829-247-111-40 83-205 85 175q20 40-1 61.5t-56 8.5Zm-246-18 62-383q4-23 17.5-32t36.5 0l66 26q19 8 26.5 22.5T790-595L655-265h-72Zm-268 0L180-595q-8-20-1.5-35.5T205-654l66-26q20-8 34.5-1t19.5 33l62 383h-72Zm-174 18q-35 13-56-8.5T84-317l85-175 83 205-111 40Zm296-18-66-428q-5-33 13-50t51-17h100q33 0 51 17t13 50l-66 428h-96Z","notifications":"M190-200q-13 0-21.5-8.5T160-230q0-13 8.5-21.5T190-260h50v-304q0-84 49.5-150.5T420-798v-22q0-25 17.5-42.5T480-880q25 0 42.5 17.5T540-820v22q81 17 130.5 83.5T720-564v304h50q13 0 21.5 8.5T800-230q0 13-8.5 21.5T770-200H190ZM480-80q-33 0-56.5-23.5T400-160h160q0 33-23.5 56.5T480-80Z","music_note":"M393-120q-63 0-106.5-43.5T243-270q0-63 43.5-106.5T393-420q28 0 50.5 8t39.5 22v-420q0-13 8.5-21.5T513-840h174q13 0 21.5 8.5T717-810v75q0 13-8.5 21.5T687-705H543v435q0 63-43.5 106.5T393-120Z","play_arrow":"M320-258v-450q0-14 9-22t21-8q4 0 8 1t8 3l354 226q7 5 10.5 11t3.5 14q0 8-3.5 14T720-458L366-232q-4 2-8 3t-8 1q-12 0-21-8t-9-22Z","stop":"M240-300v-360q0-24.75 17.63-42.38Q275.25-720 300-720h360q24.75 0 42.38 17.62Q720-684.75 720-660v360q0 24.75-17.62 42.37Q684.75-240 660-240H300q-24.75 0-42.37-17.63Q240-275.25 240-300Z","replay":"M480-80q-75 0-140.5-28T225-185q-49-49-77-114.5T120-440q0-13 8.5-21.5T150-470q13 0 21.5 8.5T180-440q0 125 87.5 212.5T480-140q125 0 212.5-87.5T780-440q0-125-85-212.5T485-740h-22l52 52q9 9 9 21t-9 21q-9 9-21 9t-21-9L368-751q-9-9-9-21t9-21l106-106q8-8 20.5-8t20.5 8q8 8 8 20.5t-8 20.5l-58 58h23q75 0 140.5 28T735-695q49 49 77 114.5T840-440q0 75-28 140.5T735-185q-49 49-114.5 77T480-80Z","arrow_forward":"M686-450H190q-13 0-21.5-8.5T160-480q0-13 8.5-21.5T190-510h496L459-737q-9-9-9-21t9-21q9-9 21-9t21 9l278 278q5 5 7 10t2 11q0 6-2 11t-7 10L501-181q-9 9-21 9t-21-9q-9-9-9-21t9-21l227-227Z","queue_music":"M642.94-160q-47.94 0-81.44-33.56t-33.5-81.5q0-47.94 32.67-81.44Q593.33-390 640-390q15.97 0 30.48 3Q685-384 698-377v-308q0-14.88 10.35-24.94T734-720h111q14.88 0 24.94 10.29t10.06 25.5Q880-669 869.94-659T845-649h-87v375q0 47.5-33.56 80.75T642.94-160ZM150-320q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h246q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H150Zm0-170q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h413q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H150Zm0-170q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h413q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H150Z","fullscreen":"M180-180h103q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H150q-12.75 0-21.37-8.63Q120-137.25 120-150v-133q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v103Zm600 0v-103q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v133q0 12.75-8.62 21.37Q822.75-120 810-120H677q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h103ZM180-780v103q0 12.75-8.68 21.37-8.67 8.63-21.5 8.63-12.82 0-21.32-8.63-8.5-8.62-8.5-21.37v-133q0-12.75 8.63-21.38Q137.25-840 150-840h133q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H180Zm600 0H677q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h133q12.75 0 21.38 8.62Q840-822.75 840-810v133q0 12.75-8.68 21.37-8.67 8.63-21.5 8.63-12.82 0-21.32-8.63-8.5-8.62-8.5-21.37v-103Z","fullscreen_exit":"M253-253H150q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h133q12.75 0 21.38 8.62Q313-295.75 313-283v133q0 12.75-8.68 21.37-8.67 8.63-21.5 8.63-12.82 0-21.32-8.63-8.5-8.62-8.5-21.37v-103Zm454 0v103q0 12.75-8.68 21.37-8.67 8.63-21.5 8.63-12.82 0-21.32-8.63-8.5-8.62-8.5-21.37v-133q0-12.75 8.63-21.38Q664.25-313 677-313h133q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H707ZM253-707v-103q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v133q0 12.75-8.62 21.37Q295.75-647 283-647H150q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h103Zm454 0h103q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H677q-12.75 0-21.37-8.63Q647-664.25 647-677v-133q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v103Z","open_in_new":"M180-120q-24 0-42-18t-18-42v-600q0-24 18-42t42-18h249q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H180v600h600v-249q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v249q0 24-18 42t-42 18H180Zm600-617L403-360q-9 9-21 8.5t-21-9.5q-9-9-9-21t9-21l377-377H549q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h261q12.75 0 21.38 8.62Q840-822.75 840-810v261q0 12.75-8.68 21.37-8.67 8.63-21.5 8.63-12.82 0-21.32-8.63-8.5-8.62-8.5-21.37v-188Z","share":"M686-80q-47.5 0-80.75-33.25T572-194q0-8 5-34L278-403q-16.28 17.34-37.64 27.17Q219-366 194-366q-47.5 0-80.75-33.25T80-480q0-47.5 33.25-80.75T194-594q24 0 45 9.3 21 9.29 37 25.7l301-173q-2-8-3.5-16.5T572-766q0-47.5 33.25-80.75T686-880q47.5 0 80.75 33.25T800-766q0 47.5-33.25 80.75T686-652q-23.27 0-43.64-9Q622-670 606-685L302-516q3 8 4.5 17.5t1.5 18q0 8.5-1 16t-3 15.5l303 173q16-15 36.09-23.5 20.1-8.5 43.07-8.5Q734-308 767-274.75T800-194q0 47.5-33.25 80.75T686-80Z","volume_up":"M780-481q0-94-52.5-169T590-759q-12-5-17-16t0-22q5-12 17.5-16.5t25.5.5q101 41 162.5 131T840-481q0 111-61.5 201T616-149q-13 5-25.5.5T573-165q-5-11 0-22t17-16q85-34 137.5-109T780-481ZM280-360H150q-13 0-21.5-8.5T120-390v-180q0-13 8.5-21.5T150-600h130l149-149q14-14 32.5-6.5T480-728v496q0 20-18.5 27.5T429-211L280-360Zm380-120q0 52-26 94t-73 64q-8 4-14.5-1t-6.5-13v-289q0-8 6.5-13t14.5-1q47 22 73 65t26 94Z","translate":"m584-197-38 98q-3 8-10.5 13.5T519-80q-16 0-25-13t-3-28l160-415q4-11 13.5-17.5T685-560h29q11 0 20.5 6.5T748-536l160 415q6 15-3 28t-25 13q-10 0-17.5-5.5T852-100l-38-97H584ZM363-401 183-222q-9 8-21 8.5t-21-8.5q-9-9-9-21t9-21l180-180q-51-53-85.5-107.5T183-660h65q16 43 43.5 85t72.5 88q46-48 85-117.5T505-740H70q-13 0-21.5-8.5T40-770q0-13 8.5-21.5T70-800h260v-50q0-13 8.5-21.5T360-880q13 0 21.5 8.5T390-850v50h260q13 0 21.5 8.5T680-770q0 13-8.5 21.5T650-740h-83q-17 78-61.5 159.5T406-443l102 104-24 63-121-125Zm242 149h188l-94-248-94 248Z","check":"m378-332 363-363q9.27-9 21.64-9 12.36 0 21.36 9.05 9 9.06 9 21.5 0 12.45-9 21.45L399-267q-9 9-21 9t-21-9L175-449q-9-9.07-8.5-21.53.5-12.47 9.55-21.47 9.06-9 21.5-9 12.45 0 21.45 9l159 160Z","touch_app":"M445-80q-29 0-56-12t-45-35L143-383q-7-9-7-20t8-19l4-4q14-15 34.5-18.5T221-438l99 53v-365q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v230h299.86Q730-520 765-485t35 85v170q0 63-43.5 106.5T650-80H445Zm26.3-570q-13.3 0-21.8-8.63-8.5-8.62-8.5-21.37 0-1.5 4-15 7-12 11-26t4-29.48Q460-796 427.88-828q-32.12-32-78-32T272-827.92q-32 32.09-32 77.92 0 15 4 29t11 26q2 3 3 6.5t1 8.5q0 12.75-8.58 21.37-8.58 8.63-21.84 8.63-8.58 0-15.58-4t-11.17-11.84Q191-685 185.5-706.25q-5.5-21.25-5.5-44.2 0-70.55 49.73-120.05Q279.45-920 350-920t120.27 49.5Q520-821 520-750.31q0 22.99-5.7 44.28-5.71 21.29-16.3 40.03-4 8-11.04 12-7.05 4-15.66 4Z"};</script>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const icon=(n,cls='i')=>`<svg class="${cls}" viewBox="0 -960 960 960" aria-hidden="true"><path d="${ICONS[n]||''}"/></svg>`;
+function toast(m,ms=2600){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,ms)}
+
+/* ---------- the piano: C4 to E5 ---------- */
+const WHITE=['C4','D4','E4','F4','G4','A4','B4','C5','D5','E5'];
+const BLACK=[['C#4',0],['D#4',1],['F#4',3],['G#4',4],['A#4',5],['C#5',7],['D#5',8]]; // sits after white key index
+const SARGAM={C:'सा',D:'रे',E:'ग',F:'म',G:'प',A:'ध',B:'नि'};
+const KEYMAP={a:'C4',s:'D4',d:'E4',f:'F4',g:'G4',h:'A4',j:'B4',k:'C5',l:'D5',';':'E5',w:'C#4',e:'D#4',t:'F#4',y:'G#4',u:'A#4',o:'C#5',p:'D#5'};
+const MIDI=n=>{const m=n.match(/^([A-G])(#?)(\d)$/);return 12*(+m[3]+1)+{C:0,D:2,E:4,F:5,G:7,A:9,B:11}[m[1]]+(m[2]?1:0)};
+const FREQ=n=>440*Math.pow(2,(MIDI(n)-69)/12);
+
+/* ---------- traditional rhymes (all public domain) ---------- */
+// each line: [syllables, notes, beats]; beats default to 1
+const SONGS=[
+ {id:'twinkle',t:'Twinkle Twinkle Little Star',ic:'star',lines:[
+   ['Twin kle twin kle lit tle star','C4 C4 G4 G4 A4 A4 G4','1 1 1 1 1 1 2'],
+   ['how I won der what you are','F4 F4 E4 E4 D4 D4 C4','1 1 1 1 1 1 2'],
+   ['Up a bove the world so high','G4 G4 F4 F4 E4 E4 D4','1 1 1 1 1 1 2'],
+   ['like a dia mond in the sky','G4 G4 F4 F4 E4 E4 D4','1 1 1 1 1 1 2'],
+   ['Twin kle twin kle lit tle star','C4 C4 G4 G4 A4 A4 G4','1 1 1 1 1 1 2'],
+   ['how I won der what you are','F4 F4 E4 E4 D4 D4 C4','1 1 1 1 1 1 2']]},
+ {id:'mary',t:'Mary Had a Little Lamb',ic:'pets',lines:[
+   ['Ma ry had a lit tle lamb','E4 D4 C4 D4 E4 E4 E4','1 1 1 1 1 1 2'],
+   ['lit tle lamb, lit tle lamb','D4 D4 D4 E4 G4 G4','1 1 2 1 1 2'],
+   ['Ma ry had a lit tle lamb, its','E4 D4 C4 D4 E4 E4 E4 E4','1 1 1 1 1 1 1 1'],
+   ['fleece was white as snow','D4 D4 E4 D4 C4','1 1 1 1 3']]},
+ {id:'row',t:'Row Row Row Your Boat',ic:'sailing',lines:[
+   ['Row row row your boat','C4 C4 C4 D4 E4','1.5 1.5 1 .5 1.5'],
+   ['gent ly down the stream','E4 D4 E4 F4 G4','1 .5 1 .5 3'],
+   ['mer ri ly mer ri ly mer ri ly mer ri ly','C5 C5 C5 G4 G4 G4 E4 E4 E4 C4 C4 C4','.5 .5 .5 .5 .5 .5 .5 .5 .5 .5 .5 .5'],
+   ['life is but a dream','G4 F4 E4 D4 C4','1 .5 1 .5 3']]},
+ {id:'birthday',t:'Happy Birthday',ic:'cake',lines:[
+   ['Hap py birth day to you','C4 C4 D4 C4 F4 E4','.75 .25 1 1 1 2'],
+   ['Hap py birth day to you','C4 C4 D4 C4 G4 F4','.75 .25 1 1 1 2'],
+   ['Hap py birth day dear frie end','C4 C4 C5 A4 F4 E4 D4','.75 .25 1 1 1 1 2'],
+   ['Hap py birth day to you','A#4 A#4 A4 F4 G4 F4','.75 .25 1 1 1 2']]},
+ {id:'farm',t:'Old MacDonald Had a Farm',ic:'agriculture',lines:[
+   ['Old Mac Don ald had a farm','C4 C4 C4 G4 A4 A4 G4','1 1 1 1 1 1 2'],
+   ['E I E I O','E4 E4 D4 D4 C4','1 1 1 1 2'],
+   ['And on that farm he had a cow','G4 C4 C4 C4 G4 A4 A4 G4','1 1 1 1 1 1 1 2'],
+   ['E I E I O','E4 E4 D4 D4 C4','1 1 1 1 2'],
+   ['With a moo moo here','G4 G4 C4 C4 C4','.5 .5 1 1 1'],
+   ['and a moo moo there','G4 G4 C4 C4 C4','.5 .5 1 1 1'],
+   ['Old Mac Don ald had a farm','C4 C4 C4 G4 A4 A4 G4','1 1 1 1 1 1 2'],
+   ['E I E I O','E4 E4 D4 D4 C4','1 1 1 1 2']]},
+ {id:'london',t:'London Bridge',ic:'castle',lines:[
+   ['Lon don Bridge is fall ing down','G4 A4 G4 F4 E4 F4 G4','1.5 .5 1 1 1 1 2'],
+   ['fall ing down','D4 E4 F4','1 1 2'],
+   ['fall ing down','E4 F4 G4','1 1 2'],
+   ['Lon don Bridge is fall ing down','G4 A4 G4 F4 E4 F4 G4','1.5 .5 1 1 1 1 2'],
+   ['my fair la dy','D4 G4 E4 C4','2 2 1 3']]},
+ {id:'buns',t:'Hot Cross Buns',ic:'bakery_dining',lines:[
+   ['Hot cross buns','E4 D4 C4','1 1 2'],
+   ['hot cross buns','E4 D4 C4','1 1 2'],
+   ['one a pen ny, two a pen ny','C4 C4 C4 C4 D4 D4 D4 D4','.5 .5 .5 .5 .5 .5 .5 .5'],
+   ['hot cross buns','E4 D4 C4','1 1 2']]},
+ {id:'jingle',t:'Jingle Bells',ic:'notifications',lines:[
+   ['Jin gle bells','E4 E4 E4','1 1 2'],
+   ['jin gle bells','E4 E4 E4','1 1 2'],
+   ['jin gle all the way','E4 G4 C4 D4 E4','1 1 1.5 .5 4'],
+   ['Oh what fun it is to ride in a one horse o pen sleigh','F4 F4 F4 F4 F4 E4 E4 E4 E4 D4 D4 E4 D4 G4','1 1 1.5 .5 1 1 1 .5 .5 1 1 1 1 2'],
+   ['Jin gle bells','E4 E4 E4','1 1 2'],
+   ['jin gle bells','E4 E4 E4','1 1 2'],
+   ['jin gle all the way','E4 G4 C4 D4 E4','1 1 1.5 .5 4'],
+   ['Oh what fun it is to ride in a one horse o pen sleigh','F4 F4 F4 F4 F4 E4 E4 E4 E4 G4 G4 F4 D4 C4','1 1 1.5 .5 1 1 1 .5 .5 1 1 1 1 4']]},
+];
+SONGS.forEach(s=>{s.seq=[];s.lines.forEach((l,li)=>{const sy=l[0].split(' '),no=l[1].split(' '),be=(l[2]||'').split(' ').map(Number);
+  if(sy.length!==no.length)console.warn('mismatch',s.id,li,sy.length,no.length);
+  sy.forEach((w,i)=>s.seq.push({w,n:no[i],b:be[i]||1,line:li}))})});
+
+/* ---------- saved on this device ---------- */
+let best={},sargam=false;
+try{best=JSON.parse(localStorage.getItem('ggp-best')||'{}')||{};sargam=localStorage.getItem('ggp-sargam')==='1'}catch(_){}
+const store=()=>{try{localStorage.setItem('ggp-best',JSON.stringify(best));localStorage.setItem('ggp-sargam',sargam?'1':'0')}catch(_){}};
+
+/* ---------- sound: a soft piano made in the browser ---------- */
+let ac=null;
+function play(n,len=.9){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();
+  const f=FREQ(n),t=ac.currentTime,g=ac.createGain();g.connect(ac.destination);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.32,t+.008);g.gain.exponentialRampToValueAtTime(.12,t+.25);g.gain.exponentialRampToValueAtTime(.001,t+len+.6);
+  [[1,'triangle',1],[2,'sine',.35],[3,'sine',.12]].forEach(([m,type,v])=>{const o=ac.createOscillator(),og=ac.createGain();o.type=type;o.frequency.value=f*m;og.gain.value=v;o.connect(og).connect(g);o.start(t);o.stop(t+len+.7)})}catch(_){}}
+
+/* ---------- draw the keys ---------- */
+const keyEls={};
+function buildPiano(){
+  const k=$('keys');k.innerHTML='';
+  WHITE.forEach(n=>{const el=document.createElement('div');el.className='wk';el.dataset.n=n;el.style.setProperty('--c',`var(--n${n[0]})`);
+    el.innerHTML=`<span class="band"></span><span class="lab"></span>`;k.appendChild(el);keyEls[n]=el});
+  BLACK.forEach(([n,i])=>{const el=document.createElement('div');el.className='bk';el.dataset.n=n;el.dataset.after=i;k.appendChild(el);keyEls[n]=el});
+  const f=document.createElement('div');f.className='finger';f.id='finger';f.hidden=true;f.innerHTML=icon('touch_app');$('piano').appendChild(f);
+  placeBlack();labels()}
+function placeBlack(){const ws=[...document.querySelectorAll('.wk')];
+  document.querySelectorAll('.bk').forEach(b=>{const w=ws[+b.dataset.after];b.style.left=(w.offsetLeft+w.offsetWidth-b.offsetWidth/2+2)+'px'})}
+function labels(){WHITE.forEach(n=>keyEls[n].querySelector('.lab').textContent=sargam?SARGAM[n[0]]:n[0]);
+  BLACK.forEach(([n])=>keyEls[n].textContent=sargam?'':n[0]+'♯');
+  $('labBtn').innerHTML=icon('translate')+`<span>${sargam?'सा रे ग':'C D E'}</span>`;$('labBtn').title='Key names: letters or sargam'}
+function moveFinger(n){const f=$('finger');if(!n){f.hidden=true;return}const el=keyEls[n],p=$('piano').getBoundingClientRect(),r=el.getBoundingClientRect();
+  f.hidden=false;f.style.left=(r.left-p.left+r.width/2)+'px'}
+
+/* ---------- game ---------- */
+let song=null,pos=0,firstTry=true,right=0,total=0,demo=null;
+function noteName(n){return sargam?(SARGAM[n[0]]+(n.includes('#')?' ♯':'')):n.replace(/\d/,'').replace('#','♯')}
+function renderLyrics(){
+  const box=$('lyrics');box.innerHTML='';if(!song){box.innerHTML='<div class="line"><span class="syl now">Play any key · कोई भी बटन दबाओ</span></div>';return}
+  let idx=0;song.lines.forEach((l,li)=>{const d=document.createElement('div');d.className='line';
+    l[0].split(' ').forEach(w=>{const s=document.createElement('span');s.className='syl'+(idx<pos?' done':'')+(idx===pos?' now':'');s.dataset.i=idx;
+      s.innerHTML=`${w}<i class="dot" style="background:var(--n${song.seq[idx].n[0]})"></i>`;d.appendChild(s);idx++});box.appendChild(d)});
+  const now=box.querySelector('.syl.now');if(now){const r=now.getBoundingClientRect(),br=box.getBoundingClientRect();if(r.top<br.top||r.bottom>br.bottom)box.scrollTop+=r.top-br.top-br.height/3}}
+function light(n){Object.values(keyEls).forEach(k=>k.classList.remove('lit'));if(n&&keyEls[n])keyEls[n].classList.add('lit');moveFinger(n)}
+function update(){
+  $('barFill').style.width=song?(pos/song.seq.length*100)+'%':'0';
+  renderLyrics();
+  if(!song||pos>=song.seq.length){light(null);$('hint').textContent=song?'Well done · शाबाश':'';return}
+  const n=song.seq[pos].n;light(n);$('hint').innerHTML=`Press the glowing key: <b>${noteName(n)}</b>`}
+function startSong(s){stopDemo();song=s;pos=0;right=0;total=0;firstTry=true;
+  $('title').textContent=s.t;$('sub').textContent='Tap the glowing key · चमकता बटन दबाओ';$('acts').hidden=false;$('bar').hidden=false;
+  ['songScreen','doneScreen'].forEach(x=>$(x).hidden=true);update()}
+function freePlay(){stopDemo();song=null;$('title').textContent='Free play · खुद बजाओ';$('sub').textContent='Play any key you like';$('acts').hidden=true;$('bar').hidden=true;
+  ['songScreen','doneScreen'].forEach(x=>$(x).hidden=true);update()}
+function press(n){
+  const el=keyEls[n];if(!el)return;play(n);el.classList.add('press');setTimeout(()=>el.classList.remove('press'),140);
+  if(!song||demo)return;
+  const want=song.seq[pos].n;
+  if(n===want){total++;if(firstTry)right++;firstTry=true;pos++;
+    if(pos>=song.seq.length){update();setTimeout(finish,700);return}update()}
+  else{if(firstTry)total++;firstTry=false;$('hint').innerHTML=`Try the glowing key: <b>${noteName(want)}</b>`}}
+function finish(){
+  const acc=total?right/total:1,stars=acc>=.9?3:acc>=.7?2:1;best[song.id]=Math.max(best[song.id]||0,stars);store();
+  light(null);$('prize').innerHTML=icon(song.ic);
+  $('doneTitle').textContent=['You played it!','Lovely playing!','Super star!'][stars-1];
+  $('won').innerHTML=[0,1,2].map(i=>icon('star',i<stars?'got':'')).join('');
+  $('doneText').textContent=`You played "${song.t}". ${right} of ${total} notes were right on the first try.`;
+  $('againBtn').innerHTML=icon('replay')+'Play again';$('againBtn').onclick=()=>startSong(song);
+  const next=SONGS[(SONGS.indexOf(song)+1)%SONGS.length];$('nextBtn').innerHTML=icon('arrow_forward')+'Next rhyme';$('nextBtn').onclick=()=>startSong(next);
+  $('doneScreen').hidden=false;
+  // a little tune to celebrate
+  ['C4','E4','G4','C5'].forEach((n,i)=>setTimeout(()=>play(n,.4),i*130))}
+
+/* listen first: the app plays the rhyme with the keys and words lighting up */
+function stopDemo(){if(!demo)return;demo.forEach(clearTimeout);demo=null;$('listenBtn').innerHTML=icon('volume_up')+'<span>Listen · सुनो</span>';if(song)update()}
+function listen(){
+  if(demo){stopDemo();return}
+  const beat=480,saved=pos;demo=[];let t=0;
+  $('listenBtn').innerHTML=icon('stop')+'<span>Stop · रुको</span>';
+  song.seq.forEach((s,i)=>{demo.push(setTimeout(()=>{pos=i;renderLyrics();light(s.n);play(s.n,s.b*beat/1000);
+      keyEls[s.n].classList.add('press');setTimeout(()=>keyEls[s.n].classList.remove('press'),160)},t));t+=s.b*beat});
+  demo.push(setTimeout(()=>{demo=null;pos=saved;$('listenBtn').innerHTML=icon('volume_up')+'<span>Listen · सुनो</span>';update()},t+300))}
+
+/* ---------- touch, mouse and computer keys ---------- */
+$('keys').addEventListener('pointerdown',e=>{const k=e.target.closest('.wk,.bk');if(!k)return;e.preventDefault();press(k.dataset.n)});
+document.addEventListener('keydown',e=>{if(e.repeat||e.metaKey||e.ctrlKey||e.altKey)return;const n=KEYMAP[e.key.toLowerCase()];if(n){e.preventDefault();press(n)}});
+
+/* ---------- song list ---------- */
+function openSongs(){stopDemo();const box=$('songs');box.innerHTML='';
+  SONGS.forEach(s=>{const b=document.createElement('button');b.type='button';b.className='song';b.id='song-'+s.id;
+    b.innerHTML=`<span class="ic">${icon(s.ic)}</span><b>${s.t}</b><span class="stars">${[0,1,2].map(i=>icon('star',i<(best[s.id]||0)?'got':'')).join('')}</span>`;
+    b.onclick=()=>startSong(s);box.appendChild(b)});
+  const f=document.createElement('button');f.type='button';f.className='song free';f.id='song-free';
+  f.innerHTML=`<span class="ic">${icon('piano')}</span><b>Free play · खुद बजाओ</b><span>Make your own music</span>`;f.onclick=freePlay;box.appendChild(f);
+  $('doneScreen').hidden=true;$('songScreen').hidden=false}
+
+/* ---------- top bar ---------- */
+$('brand').innerHTML='<span class="badge">'+icon('piano')+'</span>Grow Gently Piano <small>· पियानो बजाओ</small>';
+$('songsBtn').innerHTML=icon('queue_music')+'Rhymes';$('songsBtn').onclick=openSongs;
+$('labBtn').onclick=()=>{sargam=!sargam;store();labels();if(song)update()};
+$('listenBtn').innerHTML=icon('volume_up')+'<span>Listen · सुनो</span>';$('listenBtn').onclick=listen;
+$('restartBtn').innerHTML=icon('replay')+'<span>Start over</span>';$('restartBtn').onclick=()=>song&&startSong(song);
+
+const SHARE_URL='https://visualschedulesofficial-gif.github.io/growgently-play-/piano/';
+/* ---------- full screen + share (helps when the app sits inside a website page) ---------- */
+(()=>{
+  const fsBtn=document.getElementById('fsBtn'),shareBtn=document.getElementById('shareBtn');
+  const inFrame=(()=>{try{return window.self!==window.top}catch(_){return true}})();
+  const de=document.documentElement,canFS=!!(document.fullscreenEnabled||document.webkitFullscreenEnabled);
+  const isFS=()=>!!(document.fullscreenElement||document.webkitFullscreenElement);
+  const paint=()=>{fsBtn.innerHTML=icon(isFS()?'fullscreen_exit':canFS?'fullscreen':'open_in_new')+`<span>${isFS()?'Exit full screen':canFS?'Full screen':'Open full screen'}</span>`};
+  if(!canFS&&!inFrame)fsBtn.hidden=true;
+  paint();document.addEventListener('fullscreenchange',paint);document.addEventListener('webkitfullscreenchange',paint);
+  fsBtn.onclick=async()=>{
+    if(isFS()){try{(document.exitFullscreen||document.webkitExitFullscreen).call(document)}catch(_){}return}
+    if(canFS){try{await (de.requestFullscreen||de.webkitRequestFullscreen).call(de);return}catch(_){}}
+    window.open(location.href.split('#')[0],'_blank','noopener')};
+  shareBtn.innerHTML=icon('share')+'<span>Share</span>';
+  shareBtn.onclick=async()=>{
+    const data={title:document.title,text:'Free for kids, from Grow Gently',url:SHARE_URL};
+    if(navigator.share){try{await navigator.share(data);return}catch(e){if(e&&e.name==='AbortError')return}}
+    try{await navigator.clipboard.writeText(SHARE_URL);toast('Link copied · लिंक कॉपी हो गया')}catch(_){toast(SHARE_URL,7000)}};
+})();
+
+buildPiano();openSongs();freePlay();$('songScreen').hidden=false;
+let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{placeBlack();if(song)moveFinger(song.seq[pos]?.n)},120)});
+document.fonts&&document.fonts.ready.then(()=>{placeBlack();if(song)moveFinger(song.seq[pos]?.n)});
+})();
+</script>
+
+</body>
+</html>
